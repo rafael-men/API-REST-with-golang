@@ -1,61 +1,63 @@
 package user
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
-	"github.com/rafael-men/rest-api-with-golang/service/auth"
+	"github.com/go-playground/validator/v10"
 	"github.com/rafael-men/rest-api-with-golang/types"
-	"github.com/rafael-men/rest-api-with-golang/utils"
 )
 
+type UserStore interface {
+	GetUserByEmail(email string) (*types.User, error)
+	GetUserByID(id int) (*types.User, error)
+	CreateUser(user types.User) error
+}
+
 type Handler struct {
-	Store types.UserStore
+	userStore UserStore
+	validator *validator.Validate
 }
 
-func NewHandler(store types.UserStore) *Handler {
-	return &Handler{Store: store}
-}
-
-func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/login", h.handleLogin).Methods("POST")
-	router.HandleFunc("/register", h.handleRegister).Methods("POST")
-}
-
-func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
-	// Implementação do login
+func NewHandler(store UserStore) *Handler {
+	return &Handler{
+		userStore: store,
+		validator: validator.New(),
+	}
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	var payload types.RegisterUserPayload
-	err := utils.ParseJSON(r, &payload)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	// check if the user exists
-	_, err = h.Store.GetUserByEmail(payload.Email)
-	if err == nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with that email already exists: %s", payload.Email))
+	// Perform input validation here
+	if err := h.validator.Struct(payload); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 
-	hashedPassword, err := auth.HashPassword(payload.Password)
+	// Check if user already exists
+	if _, err := h.userStore.GetUserByEmail(payload.Email); err == nil {
+		http.Error(w, "user with that email already exists", http.StatusConflict)
+		return
+	}
 
-	err = h.Store.CreateUser(types.User{
+	// Create the user
+	newUser := types.User{
 		Firstname: payload.Firstname,
 		Lastname:  payload.Lastname,
 		Email:     payload.Email,
-		Password:  hashedPassword,
-	})
+		Password:  payload.Password, // Make sure to hash the password in real implementations
+	}
 
-	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
+	if err := h.userStore.CreateUser(newUser); err != nil {
+		http.Error(w, "failed to create user", http.StatusInternalServerError)
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, nil)
-
+	w.WriteHeader(http.StatusCreated)
 }
