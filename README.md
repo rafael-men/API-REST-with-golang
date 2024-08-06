@@ -13,12 +13,6 @@
 
 <pre><code>go mod tidy</code></pre>
 
-<p>3. <strong>Execução da API</strong>: Para iniciar a API, execute o seguinte comando:</p>
-
-<pre><code>go run main.go</code></pre>
-
-<p>Isso iniciará o servidor da API na porta padrão <code>8080</code>.</p>
-
 <h2>Contribuição</h2>
 
 <p>Sinta-se à vontade para contribuir com melhorias para este projeto! Você pode abrir um pull request ou reportar problemas através das issues.</p>
