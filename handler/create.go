@@ -24,16 +24,16 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]any
 
 	if err != nil {
-		resp = map[string]any {
-			"Error":true,
-			"Message": fmt.Sprintf("Insert Error",err),
+		resp = map[string]any{
+			"Error":   true,
+			"Message": fmt.Sprintf("Insert Error", err),
+		}
+	} else {
+		resp = map[string]any{
+			"Error":   false,
+			"Message": fmt.Sprintf("Todo successfully inserted", id),
 		}
 	}
-	else {
-		resp = map[string]any {
-			"Error":false,
-			"Message":"Todo successfully inserted"
-		}
-	}
-	w.Header().Add("Content-type","application/json")
+	w.Header().Add("Content-type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }

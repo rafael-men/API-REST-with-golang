@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/lib/pq"
+
 	"github.com/rafael-men/rest-api-with-golang/config"
 )
 
