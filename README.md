@@ -13,9 +13,9 @@
 
 <pre><code>go mod tidy</code></pre>
 
-<ol>
+<ul>
     <li>Iniciar a aplicação:</li>
-</ol>
+</ul>
 
 <pre><code>go main.go</code></pre>
 <h2>Contribuição</h2>
