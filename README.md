@@ -13,6 +13,11 @@
 
 <pre><code>go mod tidy</code></pre>
 
+<ol>
+    <li>Iniciar a aplicação:</li>
+</ol>
+
+<pre><code>go main.go</code></pre>
 <h2>Contribuição</h2>
 
 <p>Sinta-se à vontade para contribuir com melhorias para este projeto! Você pode abrir um pull request ou reportar problemas através das issues.</p>
